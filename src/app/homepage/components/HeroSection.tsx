@@ -6,6 +6,7 @@ import DarkModeToggle from '@/components/ui/DarkModeToggle';
 
 const APK_FILE_ID = '11WR0eTD-XPzhXxgxvYzy9cRV45WfDwYB';
 const APK_DOWNLOAD_URL = `https://drive.google.com/uc?export=download&id=${APK_FILE_ID}`;
+const HERO_SYNC_INTERVAL_MS = 10 * 60 * 1000;
 
 interface LiveSummaryState {
   totalSessions: number | null;
@@ -51,8 +52,11 @@ const HeroSection: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
+    let inFlight = false;
 
     const fetchLiveSummary = async () => {
+      if (inFlight) return;
+      inFlight = true;
       try {
         const res = await fetch('/api/proxy/stats/summary', { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -69,15 +73,27 @@ const HeroSection: React.FC = () => {
       } catch {
         if (!isMounted) return;
         setLiveSummary((prev) => ({ ...prev, isLoading: false }));
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    const syncWhenActive = () => {
+      if (document.visibilityState === 'visible') {
+        void fetchLiveSummary();
       }
     };
 
     void fetchLiveSummary();
-    const intervalId = window.setInterval(fetchLiveSummary, 60000);
+    const intervalId = window.setInterval(syncWhenActive, HERO_SYNC_INTERVAL_MS);
+    window.addEventListener('focus', syncWhenActive);
+    document.addEventListener('visibilitychange', syncWhenActive);
 
     return () => {
       isMounted = false;
       window.clearInterval(intervalId);
+      window.removeEventListener('focus', syncWhenActive);
+      document.removeEventListener('visibilitychange', syncWhenActive);
     };
   }, []);
 

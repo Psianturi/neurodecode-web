@@ -19,6 +19,8 @@ import {
   type ResolutionDataPoint,
 } from '@/lib/insightsApi';
 
+const INSIGHTS_SYNC_INTERVAL_MS = 10 * 60 * 1000;
+
 // ── Tooltip Components ──────────────────────────────────────────────────────
 
 const SessionTooltip = ({
@@ -362,9 +364,22 @@ const PublicInsightsSection: React.FC = () => {
   }, [loadData]);
 
   useEffect(() => {
-    loadData();
-    const interval = setInterval(() => loadData(), 60_000);
-    return () => clearInterval(interval);
+    const syncWhenActive = () => {
+      if (document.visibilityState === 'visible') {
+        void loadData();
+      }
+    };
+
+    void loadData();
+    const interval = window.setInterval(syncWhenActive, INSIGHTS_SYNC_INTERVAL_MS);
+    window.addEventListener('focus', syncWhenActive);
+    document.addEventListener('visibilitychange', syncWhenActive);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', syncWhenActive);
+      document.removeEventListener('visibilitychange', syncWhenActive);
+    };
   }, [loadData]);
 
   useEffect(() => {
