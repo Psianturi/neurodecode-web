@@ -336,7 +336,7 @@ const ProblemSolutionSection: React.FC = () => {
                 With NeuroDecode
               </div>
             </div>
-            {comparisonRows.map((row, i) => (
+            {comparisonRows.map((row) => (
               <div
                 key={row.feature}
                 className="comparison-table-row grid grid-cols-3 border-b border-border-subtle last:border-0 hover:bg-sage-pale/20 transition-colors"

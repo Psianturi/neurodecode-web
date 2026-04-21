@@ -151,7 +151,6 @@ const phases = [
 
 const HowItWorksSection: React.FC = () => {
   const [activePhase, setActivePhase] = useState(0);
-  const [prevPhase, setPrevPhase] = useState(0);
   const [animating, setAnimating] = useState(false);
   const [direction, setDirection] = useState<'left' | 'right'>('right');
   const [metricsVisible, setMetricsVisible] = useState(false);
@@ -177,7 +176,6 @@ const HowItWorksSection: React.FC = () => {
     (idx: number) => {
       if (idx === activePhase || animating) return;
       setDirection(idx > activePhase ? 'right' : 'left');
-      setPrevPhase(activePhase);
       setAnimating(true);
       setMetricsVisible(false);
       setTimeout(() => {
@@ -219,7 +217,6 @@ const HowItWorksSection: React.FC = () => {
 
   const active = phases[activePhase];
   const slideOut = direction === 'right' ? '-translate-x-6 opacity-0' : 'translate-x-6 opacity-0';
-  const slideIn = direction === 'right' ? 'translate-x-6 opacity-0' : '-translate-x-6 opacity-0';
 
   return (
     <section
@@ -269,7 +266,7 @@ const HowItWorksSection: React.FC = () => {
                 style={{
                   background: activePhase === i ? phase.colorLight : 'transparent',
                 }}
-                aria-selected={activePhase === i}
+                aria-pressed={activePhase === i}
               >
                 {/* Separator line */}
                 {i > 0 && (
