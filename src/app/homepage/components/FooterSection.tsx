@@ -1,6 +1,10 @@
 import React from 'react';
 import AppLogo from '@/components/ui/AppLogo';
 
+const APK_FILE_ID = '11WR0eTD-XPzhXxgxvYzy9cRV45WfDwYB';
+const APK_DOWNLOAD_URL = `https://drive.google.com/uc?export=download&id=${APK_FILE_ID}`;
+const APK_VIEW_URL = `https://drive.google.com/file/d/${APK_FILE_ID}/view?usp=sharing`;
+
 const FooterSection: React.FC = () => {
   return (
     <footer className="border-t border-border-subtle bg-warm-white py-16">
@@ -28,11 +32,11 @@ const FooterSection: React.FC = () => {
             </div>
             <p className="text-sm text-light-slate leading-relaxed">
               Real-time multimodal AI companion for autism spectrum disorder caregivers. Built with
-              Gemini 2.0, Keras, and Flutter.
+              Gemini 2.5, Keras, and Flutter.
             </p>
             {/* Tech badges */}
             <div className="flex flex-wrap gap-1.5 mt-4">
-              {['Gemini 2.0', 'Flutter 3.x', 'Keras', 'Riverpod'].map((t) => (
+              {['Gemini 2.5', 'Flutter 3.x', 'Keras', 'Riverpod'].map((t) => (
                 <span
                   key={t}
                   className="text-2xs font-mono px-2 py-0.5 rounded bg-sage-pale border border-sage-200 text-sage-700"
@@ -105,6 +109,30 @@ const FooterSection: React.FC = () => {
                   />
                 </svg>
                 Dev Branch
+              </a>
+              <a
+                href={APK_DOWNLOAD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm font-medium text-light-slate hover:text-dark-slate transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M12 3v10m0 0l-3-3m3 3l3-3M5 21h14a2 2 0 002-2v-2a2 2 0 00-2-2H5a2 2 0 00-2 2v2a2 2 0 002 2z"
+                  />
+                </svg>
+                Download APK (Android)
+              </a>
+              <a
+                href={APK_VIEW_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-light-slate hover:text-dark-slate transition-colors ml-6"
+              >
+                Google Drive mirror
               </a>
               <span className="flex items-center gap-2 text-sm font-medium text-light-slate">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,6 +220,24 @@ const FooterSection: React.FC = () => {
               className="text-xs text-light-slate hover:text-dark-slate transition-colors"
             >
               Terms of Use
+            </a>
+            <span className="text-border-subtle text-xs">·</span>
+            <a
+              href={APK_DOWNLOAD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-light-slate hover:text-dark-slate transition-colors"
+            >
+              Download APK Android
+            </a>
+            <span className="text-border-subtle text-xs">·</span>
+            <a
+              href={APK_VIEW_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-light-slate hover:text-dark-slate transition-colors"
+            >
+              Drive mirror
             </a>
             <span className="text-border-subtle text-xs">·</span>
             <span
