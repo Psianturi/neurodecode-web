@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, memo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, memo } from 'react';
 import Image from 'next/image';
 
 interface AppImageProps {
@@ -44,8 +44,15 @@ const AppImage = memo(function AppImage({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  useEffect(() => {
+    setImageSrc(src);
+    setIsLoading(true);
+    setHasError(false);
+  }, [src]);
+
   const isExternalUrl = useMemo(
-    () => typeof imageSrc === 'string' && imageSrc.startsWith('http'),
+    () =>
+      typeof imageSrc === 'string' && (imageSrc.startsWith('http') || imageSrc.startsWith('data:')),
     [imageSrc]
   );
   const resolvedUnoptimized = unoptimized || isExternalUrl;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo, useMemo } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import AppIcon from './AppIcon';
 import AppImage from './AppImage';
 
@@ -21,6 +21,64 @@ const AppLogo = memo(function AppLogo({
   className = '',
   onClick,
 }: AppLogoProps) {
+  const [resolvedSrc, setResolvedSrc] = useState(src);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const shouldMakeTransparent =
+      typeof src === 'string' && (src.endsWith('/app_logo.png') || src.endsWith('app_logo.png'));
+
+    if (!shouldMakeTransparent) {
+      setResolvedSrc(src);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const image = new Image();
+    image.src = src;
+
+    image.onload = () => {
+      if (cancelled) return;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        setResolvedSrc(src);
+        return;
+      }
+
+      ctx.drawImage(image, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      // Remove near-white pixels so logo follows page background in dark mode.
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        if (r > 245 && g > 245 && b > 245) {
+          data[i + 3] = 0;
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      setResolvedSrc(canvas.toDataURL('image/png'));
+    };
+
+    image.onerror = () => {
+      if (!cancelled) setResolvedSrc(src);
+    };
+
+    return () => {
+      cancelled = true;
+    };
+  }, [src]);
+
   // Memoize className calculation
   const containerClassName = useMemo(() => {
     const classes = ['flex items-center gap-2'];
@@ -34,7 +92,7 @@ const AppLogo = memo(function AppLogo({
       {/* Show image if src provided, otherwise show icon */}
       {src ? (
         <AppImage
-          src={src}
+          src={resolvedSrc}
           alt="Logo"
           width={size}
           height={size}
