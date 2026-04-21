@@ -6,11 +6,33 @@ import DarkModeToggle from '@/components/ui/DarkModeToggle';
 
 const APK_FILE_ID = '11WR0eTD-XPzhXxgxvYzy9cRV45WfDwYB';
 const APK_DOWNLOAD_URL = `https://drive.google.com/uc?export=download&id=${APK_FILE_ID}`;
-const APK_VIEW_URL = `https://drive.google.com/file/d/${APK_FILE_ID}/view?usp=sharing`;
+
+interface LiveSummaryState {
+  totalSessions: number | null;
+  activeCaregivers: number | null;
+  lastUpdated: string | null;
+  isLoading: boolean;
+}
+
+function toMetric(value: unknown): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatMetric(value: number | null): string {
+  if (value === null) return '--';
+  return new Intl.NumberFormat('en-US').format(value);
+}
 
 const HeroSection: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [liveSummary, setLiveSummary] = useState<LiveSummaryState>({
+    totalSessions: null,
+    activeCaregivers: null,
+    lastUpdated: null,
+    isLoading: true,
+  });
 
   useEffect(() => {
     const els = heroRef.current?.querySelectorAll('.animate-in');
@@ -26,6 +48,54 @@ const HeroSection: React.FC = () => {
     window.addEventListener('mousemove', handleMouse);
     return () => window.removeEventListener('mousemove', handleMouse);
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchLiveSummary = async () => {
+      try {
+        const res = await fetch('/api/proxy/stats/summary', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const json = await res.json();
+        if (!isMounted) return;
+
+        setLiveSummary({
+          totalSessions: toMetric(json?.stats?.total_sessions),
+          activeCaregivers: toMetric(json?.stats?.active_caregivers),
+          lastUpdated: typeof json?.last_updated === 'string' ? json.last_updated : null,
+          isLoading: false,
+        });
+      } catch {
+        if (!isMounted) return;
+        setLiveSummary((prev) => ({ ...prev, isLoading: false }));
+      }
+    };
+
+    void fetchLiveSummary();
+    const intervalId = window.setInterval(fetchLiveSummary, 60000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const liveSessionsLabel =
+    liveSummary.totalSessions === null
+      ? liveSummary.isLoading
+        ? 'LIVE · syncing...'
+        : 'LIVE · data unavailable'
+      : `LIVE · ${formatMetric(liveSummary.totalSessions)} sessions`;
+
+  const lastSyncLabel = liveSummary.lastUpdated
+    ? new Date(liveSummary.lastUpdated).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : liveSummary.isLoading
+      ? 'Syncing'
+      : 'Live';
 
   return (
     <section
@@ -109,7 +179,7 @@ const HeroSection: React.FC = () => {
                 className="text-2xs font-mono text-sage-700 font-medium tracking-wide"
                 style={{ fontFamily: 'JetBrains Mono', fontSize: '11px' }}
               >
-                LIVE · 247 sessions
+                {liveSessionsLabel}
               </span>
             </div>
             <DarkModeToggle />
@@ -118,25 +188,25 @@ const HeroSection: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               title="Download AnakUnggul APK (Android)"
-              className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-mid-slate border border-border-subtle bg-white/70 hover:bg-white hover:border-sage-300 transition-all duration-200 min-h-[44px]"
+              className="hidden md:flex items-center gap-2.5 pl-2 pr-4 py-1.5 rounded-full border border-sage-200 bg-white/85 hover:bg-white hover:shadow-sage-md transition-all duration-200 min-h-[44px]"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.8}
-                  d="M12 16v-8m0 8l-3-3m3 3l3-3m4 5H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v9a2 2 0 01-2 2z"
-                />
-              </svg>
-              AnakUnggul App
-            </a>
-            <a
-              href={APK_VIEW_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden xl:flex text-xs text-light-slate hover:text-dark-slate transition-colors"
-            >
-              Drive mirror
+              <span
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white"
+                style={{ background: 'linear-gradient(135deg, #7A9E7E 0%, #5B7FA6 100%)' }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.8}
+                    d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"
+                  />
+                </svg>
+              </span>
+              <span className="flex flex-col leading-tight">
+                <span className="text-sm font-semibold text-dark-slate">AnakUnggul App</span>
+                <span className="text-2xs text-light-slate">Android APK</span>
+              </span>
             </a>
             <a
               href="#solution"
@@ -408,24 +478,30 @@ const HeroSection: React.FC = () => {
                     LIVE SESSION
                   </span>
                 </div>
-                <div className="text-2xl font-bold text-dark-slate font-heading mb-0.5">247</div>
-                <div className="text-xs text-light-slate">Active caregivers right now</div>
-                <div className="mt-3 h-1.5 rounded-full bg-sage-pale overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-sage-400 to-slate-blue-light"
-                    style={{ width: '68%' }}
-                  />
+                <div className="text-2xl font-bold text-dark-slate font-heading mb-0.5">
+                  {formatMetric(liveSummary.activeCaregivers)}
                 </div>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="text-2xs text-light-slate" style={{ fontSize: '10px' }}>
-                    68% capacity
-                  </span>
-                  <span
-                    className="text-2xs font-mono text-sage-600"
-                    style={{ fontFamily: 'JetBrains Mono', fontSize: '10px' }}
-                  >
-                    ↑ 12% today
-                  </span>
+                <div className="text-xs text-light-slate">Active caregivers</div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="rounded-lg bg-white/60 border border-border-subtle px-2 py-1.5">
+                    <div className="text-2xs text-light-slate" style={{ fontSize: '10px' }}>
+                      Sessions
+                    </div>
+                    <div className="text-xs font-semibold text-dark-slate">
+                      {formatMetric(liveSummary.totalSessions)}
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-white/60 border border-border-subtle px-2 py-1.5">
+                    <div className="text-2xs text-light-slate" style={{ fontSize: '10px' }}>
+                      Last sync
+                    </div>
+                    <div
+                      className="text-xs font-mono text-sage-700"
+                      style={{ fontFamily: 'JetBrains Mono' }}
+                    >
+                      {lastSyncLabel}
+                    </div>
+                  </div>
                 </div>
               </div>
 

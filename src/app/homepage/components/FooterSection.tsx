@@ -3,7 +3,6 @@ import AppLogo from '@/components/ui/AppLogo';
 
 const APK_FILE_ID = '11WR0eTD-XPzhXxgxvYzy9cRV45WfDwYB';
 const APK_DOWNLOAD_URL = `https://drive.google.com/uc?export=download&id=${APK_FILE_ID}`;
-const APK_VIEW_URL = `https://drive.google.com/file/d/${APK_FILE_ID}/view?usp=sharing`;
 
 const FooterSection: React.FC = () => {
   return (
@@ -121,30 +120,11 @@ const FooterSection: React.FC = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={1.5}
-                    d="M12 3v10m0 0l-3-3m3 3l3-3M5 21h14a2 2 0 002-2v-2a2 2 0 00-2-2H5a2 2 0 00-2 2v2a2 2 0 002 2z"
-                  />
-                </svg>
-                Download APK (Android)
-              </a>
-              <a
-                href={APK_VIEW_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-light-slate hover:text-dark-slate transition-colors ml-6"
-              >
-                Google Drive mirror
-              </a>
-              <span className="flex items-center gap-2 text-sm font-medium text-light-slate">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
                     d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"
                   />
                 </svg>
-                Flutter App (iOS/Android)
-              </span>
+                Flutter App (Android)
+              </a>
             </div>
           </div>
 
@@ -220,24 +200,6 @@ const FooterSection: React.FC = () => {
               className="text-xs text-light-slate hover:text-dark-slate transition-colors"
             >
               Terms of Use
-            </a>
-            <span className="text-border-subtle text-xs">·</span>
-            <a
-              href={APK_DOWNLOAD_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-light-slate hover:text-dark-slate transition-colors"
-            >
-              Download APK Android
-            </a>
-            <span className="text-border-subtle text-xs">·</span>
-            <a
-              href={APK_VIEW_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-light-slate hover:text-dark-slate transition-colors"
-            >
-              Drive mirror
             </a>
             <span className="text-border-subtle text-xs">·</span>
             <span
